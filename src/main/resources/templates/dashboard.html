@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeployWatch | Deployment Dashboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1120;color:#e5e7eb;font:15px Arial,sans-serif}
+header{padding:24px 5%;background:#111a2e;border-bottom:1px solid #26344f;display:flex;justify-content:space-between;align-items:center}
+h1{margin:0;font-size:25px}header p{margin:7px 0 0;color:#9ca3af}.tag{padding:7px 11px;border-radius:20px;background:#183c35;color:#86efac}
+main{padding:28px 5%;max-width:1500px;margin:auto}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:28px}
+.card,.panel{background:#111a2e;border:1px solid #26344f;border-radius:14px;padding:20px}.label{color:#9ca3af;font-size:13px}.number{font-size:32px;font-weight:bold;margin-top:10px}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.panel h2{font-size:18px;margin:0 0 16px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #26344f;font-size:13px}th{color:#9ca3af;font-weight:normal}
+.badge{padding:5px 8px;border-radius:20px;font-size:11px;font-weight:bold}.SUCCESS{background:#123c2b;color:#86efac}.FAILED{background:#4c1d25;color:#fda4af}.RUNNING{background:#453512;color:#fde68a}.QUEUED{background:#243449;color:#bfdbfe}
+.incident{padding:13px 0;border-bottom:1px solid #26344f}.incident:last-child{border:0}.incident strong{display:block;margin-bottom:6px}.muted{color:#9ca3af;font-size:12px}.empty{color:#9ca3af;padding:15px 0}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}@media(max-width:520px){header{align-items:flex-start;gap:10px;flex-direction:column}.cards{grid-template-columns:1fr 1fr}.card{padding:14px}.number{font-size:25px}table{display:block;overflow-x:auto}}
+</style></head>
+<body>
+<header><div><h1>DeployWatch</h1><p>Deployment health & release monitoring</p></div><span class="tag">● System dashboard</span></header>
+<main>
+<section class="cards">
+<div class="card"><div class="label">Successful deployments</div><div class="number" th:text="${successCount}">0</div></div>
+<div class="card"><div class="label">Failed deployments</div><div class="number" th:text="${failedCount}">0</div></div>
+<div class="card"><div class="label">Currently running</div><div class="number" th:text="${runningCount}">0</div></div>
+<div class="card"><div class="label">Open incidents</div><div class="number" th:text="${openIncidentCount}">0</div></div>
+</section>
+<section class="grid">
+<div class="panel"><h2>Recent deployments</h2>
+<table><thead><tr><th>Application</th><th>Environment</th><th>Version</th><th>Status</th><th>Updated</th></tr></thead>
+<tbody><tr th:each="d : ${deployments}"><td th:text="${d.applicationName}">App</td><td th:text="${d.environment}">dev</td><td th:text="${d.version}">v1</td><td><span class="badge" th:classappend="${d.status}" th:text="${d.status}">SUCCESS</span></td><td th:text="${#temporals.format(d.updatedAt,'dd MMM HH:mm')}">time</td></tr>
+<tr th:if="${#lists.isEmpty(deployments)}"><td colspan="5" class="empty">No deployments yet. Use POST /api/deployments to register one.</td></tr></tbody></table>
+</div>
+<div class="panel"><h2>Latest incidents</h2>
+<div th:each="i : ${incidents}" class="incident"><strong><span th:text="${i.severity}">HIGH</span> · <span th:text="${i.deployment.applicationName}">Application</span></strong><div th:text="${i.description}">Deployment issue</div><div class="muted"><span th:text="${i.resolved ? 'Resolved' : 'Open'}">Open</span> · <span th:text="${#temporals.format(i.createdAt,'dd MMM yyyy HH:mm')}">time</span></div></div>
+<div th:if="${#lists.isEmpty(incidents)}" class="empty">No incidents recorded. Failed deployments will appear here.</div>
+</div></section>
+<p class="muted" style="margin-top:22px">Prototype dashboard · Refresh the page to view the latest database state.</p>
+</main></body></html>
